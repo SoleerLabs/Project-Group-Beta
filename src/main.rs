@@ -1,28 +1,42 @@
-use axum::{ routing::get, Router };
+//src/main.rs
+use axum::{routing::get, Router};
+use dotenvy::dotenv;
+use std::env;
+use sqlx::postgres::PgPoolOptions;
 
 pub mod models;
 pub mod routers;
 pub mod controllers;
+pub mod app_state;
 
-pub use routers::{ auth_routes, cart_routes, order_routes, product_routes };
+use app_state::AppState;
+use routers::product::product_routes;
 
 #[tokio::main]
 async fn main() {
-    // our router
+    dotenv().ok();
+    
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env");
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await
+        .expect("Failed to create Postgres pool");
+    
+    let app_state = AppState {
+        db: std::sync::Arc::new(pool),
+    };
+    
     let app = Router::new()
         .route("/", get(root))
-        .nest("/auth", auth_routes())
-        .nest("/cart", cart_routes())
-        .nest("/orders", order_routes())
-        .nest("/products", product_routes());
-
-    // run our app with hyper, listening globally on port 3000
+        .nest("/products", product_routes())
+        .with_state(app_state);
+    
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
     println!("Server is running on port: 3000");
+    axum::serve(listener, app).await.unwrap();
 }
 
-// which calls one of these handlers
 async fn root() -> &'static str {
-    "Server is live 🚀"
+    "Server is live 🚀 on port: 3000"
 }
