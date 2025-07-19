@@ -1,4 +1,11 @@
-use serde::{ Deserialize, Serialize };
+use serde::{Deserialize, Serialize};
+use sqlx::FromRow;
 
-#[derive(Deserialize, Serialize)]
-pub struct User {}
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct User {
+    pub id: i32,
+    pub username: String,
+    pub email: String,
+    pub password_hash: String,
+    pub role: String,
+}

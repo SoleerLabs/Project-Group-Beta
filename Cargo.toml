@@ -1,9 +1,16 @@
 [package]
 name = "project-group-beta"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-axum = "0.8.4"
+axum = "0.7"
+axum-extra = { version = "0.9", features = ["cookie", "typed-header"] }
+async-trait = "0.1"
 serde = {version = "1.0.219", features = ["derive"] }
 tokio = { version = "1.46.1", features = ["rt-multi-thread"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio-native-tls", "macros"] }
+dotenvy = "0.15"
+jsonwebtoken = "9.0"
+argon2 = "0.5"
+chrono = "0.4"
