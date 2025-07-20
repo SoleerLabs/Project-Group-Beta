@@ -1,20 +1,31 @@
 //controllers/product.rs
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     Json,
 };
+use serde::Deserialize;
 use uuid::Uuid;
 use crate::{
     app_state::AppState,
     models::Product::{Product, CreateProduct, UpdateProduct},
 };
 
+#[derive(Debug, Deserialize)]
+pub struct ProductQuery {
+    pub search: Option<String>,
+    pub min_price: Option<f64>,
+    pub max_price: Option<f64>,
+    pub category: Option<String>,
+    pub limit: Option<i32>,
+    pub offset: Option<i32>,
+}
+
 pub async fn create_product(
     State(state): State<AppState>,
     Json(payload): Json<CreateProduct>,
 ) -> Result<(StatusCode, Json<Product>), StatusCode> {
-    // Using a placeholder vendor_id. In real implementation, this would come from JWT token
+    // For now, using a placeholder vendor_id. In real implementation, this would come from JWT token
     let placeholder_vendor_id = Uuid::new_v4();
     
     let query = sqlx::query_as!(
@@ -41,15 +52,63 @@ pub async fn create_product(
 
 pub async fn get_all_products(
     State(state): State<AppState>,
+    Query(params): Query<ProductQuery>,
 ) -> Result<Json<Vec<Product>>, StatusCode> {
-    let query = sqlx::query_as!(
-        Product,
-        r#"
-        SELECT id, vendor_id, name, description, price, stock, category, created_at, updated_at 
-        FROM products
-        ORDER BY name
-        "#
-    );
+    let mut query_str = String::from("SELECT id, vendor_id, name, description, price, stock, category, created_at, updated_at FROM products WHERE 1=1");
+    let mut bind_count = 0;
+    
+    // Build dynamic WHERE clause
+    if params.search.is_some() {
+        bind_count += 1;
+        query_str.push_str(&format!(" AND (name ILIKE ${} OR description ILIKE ${})", bind_count, bind_count));
+    }
+    
+    if params.min_price.is_some() {
+        bind_count += 1;
+        query_str.push_str(&format!(" AND price >= ${}", bind_count));
+    }
+    
+    if params.max_price.is_some() {
+        bind_count += 1;
+        query_str.push_str(&format!(" AND price <= ${}", bind_count));
+    }
+    
+    if params.category.is_some() {
+        bind_count += 1;
+        query_str.push_str(&format!(" AND category ILIKE ${}", bind_count));
+    }
+    
+    query_str.push_str(" ORDER BY name");
+    
+    // Add pagination
+    let limit = params.limit.unwrap_or(50);
+    let offset = params.offset.unwrap_or(0);
+    bind_count += 1;
+    query_str.push_str(&format!(" LIMIT ${}", bind_count));
+    bind_count += 1;
+    query_str.push_str(&format!(" OFFSET ${}", bind_count));
+    
+    // Build the query with dynamic binding
+    let mut query = sqlx::query_as::<_, Product>(&query_str);
+    
+    if let Some(search) = &params.search {
+        let search_term = format!("%{}%", search);
+        query = query.bind(search_term);
+    }
+    
+    if let Some(min_price) = params.min_price {
+        query = query.bind(min_price);
+    }
+    
+    if let Some(max_price) = params.max_price {
+        query = query.bind(max_price);
+    }
+    
+    if let Some(category) = &params.category {
+        query = query.bind(category);
+    }
+    
+    query = query.bind(limit).bind(offset);
     
     match query.fetch_all(&*state.db).await {
         Ok(products) => Ok(Json(products)),
