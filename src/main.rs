@@ -23,7 +23,8 @@ async fn main() {
     // our router
     let app = Router::new()
         .route("/", get(root))
-        .nest("/auth", auth_routes()).with_state(state.clone());
+        .nest("/auth", auth_routes())
+        .with_state(state.clone());
 
         // .nest("/cart", cart_routes())
         // .nest("/orders", order_routes())

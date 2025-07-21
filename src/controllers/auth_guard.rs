@@ -10,16 +10,17 @@ use axum_extra::{
 };
 use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: i32, 
+pub sub: Uuid, 
     pub exp: usize,
 }
 
 #[derive(Debug)]
 pub struct AuthUser {
-    pub user_id: i32,
+  pub user_id: Uuid,
 }
 
 #[async_trait]

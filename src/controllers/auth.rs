@@ -10,6 +10,7 @@ use std::sync::Arc;
 use chrono::{Utc, Duration};
 use crate::models::User::User; 
 use crate::controllers::auth_guard::AuthUser;
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -18,7 +19,7 @@ pub struct AppState {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: i32,
+    pub sub: Uuid,
     pub exp: usize,
 }
 
@@ -51,7 +52,7 @@ pub async fn register(
     Json(payload): Json<RegisterRequest>, 
 ) -> Result<impl IntoResponse, StatusCode> { 
     println!("Register attempt for email: {}", payload.email);
-    
+    let user_id = Uuid::new_v4();
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
     let password_hash = argon2
@@ -75,7 +76,7 @@ pub async fn register(
     .bind(&payload.email)
     .bind(&password_hash)
     .bind(&role)
-    .fetch_one(&state.db)
+    .fetch_one(&state.db)  // FIXED: Removed &* dereferencing
     .await
     .map_err(|e| {
         println!("Database error during registration: {:?}", e);
@@ -91,8 +92,8 @@ pub async fn register(
 }
 
 pub async fn login(
-    State(state): State<Arc<AppState>>, // Fixed: was State>
-    Json(payload): Json<LoginRequest>, // Fixed: was Json
+    State(state): State<Arc<AppState>>, 
+    Json(payload): Json<LoginRequest>, 
 ) -> impl IntoResponse {
     println!("Login attempt for email: {}", payload.email);
     
@@ -104,7 +105,7 @@ pub async fn login(
         "#,
     )
     .bind(&payload.email)
-    .fetch_optional(&state.db)
+    .fetch_optional(&state.db)  // FIXED: Removed &* dereferencing
     .await
     {
         Ok(Some(user)) => {
