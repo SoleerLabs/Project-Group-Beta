@@ -12,15 +12,19 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-pub sub: Uuid, 
+    pub sub: Uuid,       
+    pub role: String,   
     pub exp: usize,
 }
 
+
 #[derive(Debug)]
 pub struct AuthUser {
-  pub user_id: Uuid,
+    pub user_id: Uuid,
+    pub role: String,
 }
 
 #[async_trait]
@@ -50,8 +54,9 @@ where
             })?;
            
             return Ok(AuthUser {
-                user_id: decoded.claims.sub,
-            });
+    user_id: decoded.claims.sub,
+    role: decoded.claims.role, 
+});
         }
 
         // Fallback: try to get token from cookies
@@ -72,8 +77,9 @@ where
             StatusCode::UNAUTHORIZED
         })?;
        
-        Ok(AuthUser {
-            user_id: decoded.claims.sub,
-        })
+       return Ok(AuthUser {
+    user_id: decoded.claims.sub,
+    role: decoded.claims.role, 
+});
     }
 }

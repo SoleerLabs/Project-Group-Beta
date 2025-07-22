@@ -1,6 +1,6 @@
+use crate::app_state::AppState;
 use axum::{extract::{Json, State}, http::StatusCode, response::IntoResponse};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
 use jsonwebtoken::{encode, Header, EncodingKey};
 use argon2::{
     password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
@@ -12,14 +12,10 @@ use crate::models::User::User;
 use crate::controllers::auth_guard::AuthUser;
 use uuid::Uuid;
 
-#[derive(Clone)]
-pub struct AppState {
-    pub db: PgPool,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: Uuid,
+    pub sub: Uuid,      
+    pub role: String,    
     pub exp: usize,
 }
 
@@ -43,7 +39,7 @@ struct LoginResponse {
 }
 
 pub async fn dashboard(auth_user: AuthUser) -> impl IntoResponse {
-    let message = format!("Welcome back, user ID: {}", auth_user.user_id);
+    let message = format!("Welcome back, user ID: {} and you are a {}", auth_user.user_id, auth_user.role);
     (StatusCode::OK, message)
 }
 
@@ -52,7 +48,6 @@ pub async fn register(
     Json(payload): Json<RegisterRequest>, 
 ) -> Result<impl IntoResponse, StatusCode> { 
     println!("Register attempt for email: {}", payload.email);
-    let user_id = Uuid::new_v4();
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
     let password_hash = argon2
@@ -64,23 +59,24 @@ pub async fn register(
         .to_string();
     
     let role = payload.role.clone().unwrap_or_else(|| "customer".to_string());
-    
-    let result = sqlx::query_as::<_, User>(
-        r#"
-        INSERT INTO users (username, email, password_hash, role)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id, username, email, password_hash, role
-        "#,
-    )
-    .bind(&payload.username)
-    .bind(&payload.email)
-    .bind(&password_hash)
-    .bind(&role)
-    .fetch_one(&state.db)  // FIXED: Removed &* dereferencing
+    let user_id = Uuid::new_v4(); 
+let result = sqlx::query_as::<_, User>(
+    r#"
+    INSERT INTO users (id, username, email, password_hash, role)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING id, username, email, password_hash, role
+    "#,
+)
+.bind(&user_id)  // $1 → id
+.bind(&payload.username) // $2 my username
+.bind(&payload.email)    // $3 my email
+.bind(&password_hash)    // $4 my passHash 
+.bind(&role)             // $5 my role
+.fetch_one(&*state.db)
     .await
     .map_err(|e| {
         println!("Database error during registration: {:?}", e);
-        // Check if it's a unique constraint violation
+        // Checking if it's a unique constraint violation
         if e.to_string().contains("duplicate key value") {
             StatusCode::CONFLICT // 409 for duplicate user
         } else {
@@ -105,7 +101,7 @@ pub async fn login(
         "#,
     )
     .bind(&payload.email)
-    .fetch_optional(&state.db)  // FIXED: Removed &* dereferencing
+    .fetch_optional(&*state.db)  
     .await
     {
         Ok(Some(user)) => {
@@ -139,10 +135,10 @@ pub async fn login(
     println!("Password verified successfully");
     
     let claims = Claims {
-        sub: user.id,
-        exp: (Utc::now() + Duration::hours(24)).timestamp() as usize,
-    };
-    
+    sub: user.id,
+    role: user.role.clone(), 
+    exp: (Utc::now() + Duration::hours(24)).timestamp() as usize,
+};
     let jwt_secret = match std::env::var("JWT_SECRET") {
         Ok(secret) => {
             println!("JWT_SECRET found");

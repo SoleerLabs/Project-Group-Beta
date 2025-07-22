@@ -3,7 +3,7 @@ CREATE TABLE users (
     username VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) DEFAULT 'customer', 
+    role VARCHAR(225) DEFAULT 'customer', 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
