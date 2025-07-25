@@ -38,6 +38,13 @@ struct LoginResponse {
     token: String,
 }
 
+
+#[derive(Debug, Serialize)]
+struct ErrorResponse {
+    error: String,
+}
+
+
 pub async fn dashboard(auth_user: AuthUser) -> impl IntoResponse {
     let message = format!("Welcome back, user ID: {} and you are a {}", auth_user.user_id, auth_user.role);
     (StatusCode::OK, message)
@@ -46,45 +53,63 @@ pub async fn dashboard(auth_user: AuthUser) -> impl IntoResponse {
 pub async fn register(
     State(state): State<Arc<AppState>>, 
     Json(payload): Json<RegisterRequest>, 
-) -> Result<impl IntoResponse, StatusCode> { 
+) -> Result<impl IntoResponse, impl IntoResponse> {
     println!("Register attempt for email: {}", payload.email);
+    
     let salt = SaltString::generate(&mut OsRng);
     let argon2 = Argon2::default();
-    let password_hash = argon2
-        .hash_password(payload.password.as_bytes(), &salt)
-        .map_err(|e| {
+    let password_hash = match argon2.hash_password(payload.password.as_bytes(), &salt) {
+        Ok(hash) => hash.to_string(),
+        Err(e) => {
             println!("Password hashing error: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        })?
-        .to_string();
-    
-    let role = payload.role.clone().unwrap_or_else(|| "customer".to_string());
-    let user_id = Uuid::new_v4(); 
-let result = sqlx::query_as::<_, User>(
-    r#"
-    INSERT INTO users (id, username, email, password_hash, role)
-    VALUES ($1, $2, $3, $4, $5)
-    RETURNING id, username, email, password_hash, role
-    "#,
-)
-.bind(&user_id)  // $1 → id
-.bind(&payload.username) // $2 my username
-.bind(&payload.email)    // $3 my email
-.bind(&password_hash)    // $4 my passHash 
-.bind(&role)             // $5 my role
-.fetch_one(&*state.db)
-    .await
-    .map_err(|e| {
-        println!("Database error during registration: {:?}", e);
-        // Checking if it's a unique constraint violation
-        if e.to_string().contains("duplicate key value") {
-            StatusCode::CONFLICT // 409 for duplicate user
-        } else {
-            StatusCode::BAD_REQUEST
+            return Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Internal error hashing password".to_string(),
+                }),
+            ));
         }
-    })?;
-    
-    Ok((StatusCode::CREATED, Json(result)))
+    };
+
+    let role = payload.role.clone().unwrap_or_else(|| "customer".to_string());
+    let user_id = Uuid::new_v4();
+
+    let result = sqlx::query_as::<_, User>(
+        r#"
+        INSERT INTO users (id, username, email, password_hash, role)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, username, email, password_hash, role
+        "#,
+    )
+    .bind(&user_id)
+    .bind(&payload.username)
+    .bind(&payload.email)
+    .bind(&password_hash)
+    .bind(&role)
+    .fetch_one(&*state.db)
+    .await;
+
+    match result {
+        Ok(user) => Ok((StatusCode::CREATED, Json(user))),
+        Err(e) => {
+            println!("Database error during registration: {:?}", e);
+            if e.to_string().contains("duplicate key value") {
+                Err((
+                    StatusCode::CONFLICT,
+                    Json(ErrorResponse {
+                        error: "Email already registered".to_string(),
+                    }),
+                ))
+            } else {
+                Err((
+                    StatusCode::BAD_REQUEST,
+                    Json(ErrorResponse {
+                        error: "Failed to register user".to_string(),
+                    }),
+                ))
+            }
+        }
+    }
 }
 
 pub async fn login(
@@ -92,7 +117,7 @@ pub async fn login(
     Json(payload): Json<LoginRequest>, 
 ) -> impl IntoResponse {
     println!("Login attempt for email: {}", payload.email);
-    
+
     let user = match sqlx::query_as::<_, User>(
         r#"
         SELECT id, username, email, password_hash, role
@@ -101,70 +126,87 @@ pub async fn login(
         "#,
     )
     .bind(&payload.email)
-    .fetch_optional(&*state.db)  
+    .fetch_optional(&*state.db)
     .await
     {
-        Ok(Some(user)) => {
-            println!("User found: {}", user.username);
-            user
-        },
+        Ok(Some(user)) => user,
         Ok(None) => {
-            println!("No user found with email: {}", payload.email);
-            return StatusCode::NOT_FOUND.into_response();
-        },
+            return (
+                StatusCode::NOT_FOUND,
+                Json(ErrorResponse {
+                    error: "User not found".to_string(),
+                }),
+            )
+                .into_response();
+        }
         Err(e) => {
             println!("Database error during login: {:?}", e);
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        },
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Database error during login".to_string(),
+                }),
+            )
+                .into_response();
+        }
     };
-    
+
     let parsed_hash = match PasswordHash::new(&user.password_hash) {
         Ok(hash) => hash,
-        Err(e) => {
-            println!("Password hash parsing error: {:?}", e);
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        },
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Invalid password hash format".to_string(),
+                }),
+            )
+                .into_response();
+        }
     };
-    
+
     let argon2 = Argon2::default();
-    if let Err(e) = argon2.verify_password(payload.password.as_bytes(), &parsed_hash) {
-        println!("Password verification failed: {:?}", e);
-        return StatusCode::UNAUTHORIZED.into_response();
+    if let Err(_) = argon2.verify_password(payload.password.as_bytes(), &parsed_hash) {
+        return (
+            StatusCode::UNAUTHORIZED,
+            Json(ErrorResponse {
+                error: "Invalid credentials".to_string(),
+            }),
+        )
+            .into_response();
     }
-    
-    println!("Password verified successfully");
-    
+
     let claims = Claims {
-    sub: user.id,
-    role: user.role.clone(), 
-    exp: (Utc::now() + Duration::hours(24)).timestamp() as usize,
-};
+        sub: user.id,
+        role: user.role.clone(),
+        exp: (Utc::now() + Duration::hours(24)).timestamp() as usize,
+    };
+
     let jwt_secret = match std::env::var("JWT_SECRET") {
-        Ok(secret) => {
-            println!("JWT_SECRET found");
-            secret
-        },
-        Err(e) => {
-            println!("JWT_SECRET environment variable error: {:?}", e);
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        },
+        Ok(secret) => secret,
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "JWT secret not set".to_string(),
+                }),
+            )
+                .into_response();
+        }
     };
-    
-    let token = match encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(jwt_secret.as_ref()),
-    ) {
-        Ok(token) => {
-            println!("JWT token generated successfully");
-            token
-        },
-        Err(e) => {
-            println!("JWT encoding error: {:?}", e);
-            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
-        },
+
+    let token = match encode(&Header::default(), &claims, &EncodingKey::from_secret(jwt_secret.as_ref())) {
+        Ok(token) => token,
+        Err(_) => {
+            return (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Token generation failed".to_string(),
+                }),
+            )
+                .into_response();
+        }
     };
-    
+
     let response = LoginResponse { token };
     (StatusCode::OK, Json(response)).into_response()
 }

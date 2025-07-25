@@ -1,11 +1,11 @@
-///controllers/order.rs
 use axum::{
     extract::{State, Path, Query},
     http::StatusCode,
     response::IntoResponse,
     Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
 use std::sync::Arc;
 use uuid::Uuid;
 use bigdecimal::BigDecimal;
@@ -25,6 +25,11 @@ pub struct OrderQueryParams {
     pub vendor: Option<bool>,  // ?vendor=true for vendor-specific orders
 }
 
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    error: String,
+}
+
 /// Get all orders - behavior depends on user role and query params
 /// Customer: gets their own orders
 /// Vendor with ?vendor=true: gets orders containing their products
@@ -32,7 +37,7 @@ pub async fn get_all_orders(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Query(params): Query<OrderQueryParams>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
     // Vendor requesting their orders (orders containing their products)
     if auth_user.role == "vendor" && params.vendor.unwrap_or(false) {
@@ -52,7 +57,12 @@ pub async fn get_all_orders(
         .await
         .map_err(|e| {
             println!("Database error fetching vendor orders: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to fetch vendor orders".into(),
+                }),
+            )
         })?;
 
         return Ok(Json(orders).into_response());
@@ -75,7 +85,12 @@ pub async fn get_all_orders(
     .await
     .map_err(|e| {
         println!("Database error fetching customer orders: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to fetch customer orders".into(),
+            }),
+        )
     })?;
 
     Ok(Json(orders).into_response())
@@ -86,17 +101,27 @@ pub async fn create_order(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Json(_payload): Json<CreateOrderRequest>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
     // Only customers can create orders
     if auth_user.role != "customer" {
-        return Err(StatusCode::FORBIDDEN);
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(ErrorResponse {
+                error: "Only customers can create orders".into(),
+            }),
+        ));
     }
 
     // Start transaction
     let mut tx = state.db.begin().await.map_err(|e| {
         println!("Failed to start transaction: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to start transaction".into(),
+            }),
+        )
     })?;
 
     // Get cart items with product details
@@ -114,11 +139,21 @@ pub async fn create_order(
     .await
     .map_err(|e| {
         println!("Failed to fetch cart items: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to fetch cart items".into(),
+            }),
+        )
     })?;
 
     if cart_items.is_empty() {
-        return Err(StatusCode::BAD_REQUEST); // No items in cart
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: "Cart is empty. Add items to cart before creating an order".into(),
+            }),
+        ));
     }
 
     // Check stock availability and calculate total
@@ -127,7 +162,13 @@ pub async fn create_order(
         if item.stock < item.quantity {
             println!("Insufficient stock for product {}: requested {}, available {}", 
                     item.product_id, item.quantity, item.stock);
-            return Err(StatusCode::CONFLICT); // Insufficient stock
+            return Err((
+                StatusCode::CONFLICT,
+                Json(ErrorResponse {
+                    error: format!("Insufficient stock for product {}. Requested: {}, Available: {}", 
+                                 item.product_name, item.quantity, item.stock),
+                }),
+            ));
         }
         total += &item.price * BigDecimal::from(item.quantity);
     }
@@ -148,7 +189,12 @@ pub async fn create_order(
     .await
     .map_err(|e| {
         println!("Failed to create order: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to create order".into(),
+            }),
+        )
     })?;
 
     // Create order items and update product stock
@@ -169,7 +215,12 @@ pub async fn create_order(
         .await
         .map_err(|e| {
             println!("Failed to create order item: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to create order item".into(),
+                }),
+            )
         })?;
 
         // Update product stock
@@ -182,7 +233,12 @@ pub async fn create_order(
         .await
         .map_err(|e| {
             println!("Failed to update product stock: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to update product stock".into(),
+                }),
+            )
         })?;
     }
 
@@ -193,13 +249,23 @@ pub async fn create_order(
         .await
         .map_err(|e| {
             println!("Failed to clear cart: {:?}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to clear cart".into(),
+                }),
+            )
         })?;
 
     // Commit transaction
     tx.commit().await.map_err(|e| {
         println!("Failed to commit transaction: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to commit transaction".into(),
+            }),
+        )
     })?;
 
     // Simulate payment (always succeeds for now)
@@ -222,7 +288,7 @@ pub async fn get_order_by_id(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Path(order_id): Path<Uuid>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
     // First get the order
     let order = sqlx::query_as::<_, Order>(
@@ -233,9 +299,19 @@ pub async fn get_order_by_id(
     .await
     .map_err(|e| {
         println!("Database error fetching order: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to fetch order".into(),
+            }),
+        )
     })?
-    .ok_or(StatusCode::NOT_FOUND)?;
+    .ok_or((
+        StatusCode::NOT_FOUND,
+        Json(ErrorResponse {
+            error: "Order not found".into(),
+        }),
+    ))?;
 
     // Check authorization
     let can_access = match auth_user.role.as_str() {
@@ -249,7 +325,12 @@ pub async fn get_order_by_id(
             .bind(auth_user.user_id)
             .fetch_one(&*state.db)
             .await
-            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+            .map_err(|_| (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to verify vendor access".into(),
+                }),
+            ))?;
             
             vendor_item_count > 0
         },
@@ -257,7 +338,12 @@ pub async fn get_order_by_id(
     };
 
     if !can_access {
-        return Err(StatusCode::FORBIDDEN);
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(ErrorResponse {
+                error: "You don't have permission to view this order".into(),
+            }),
+        ));
     }
 
     // Get order items with product details
@@ -276,7 +362,12 @@ pub async fn get_order_by_id(
     .await
     .map_err(|e| {
         println!("Database error fetching order items: {:?}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to fetch order items".into(),
+            }),
+        )
     })?;
 
     let items: Vec<OrderItemDetails> = order_items
@@ -312,11 +403,16 @@ pub async fn delete_order_by_id(
     State(state): State<Arc<AppState>>,
     auth_user: AuthUser,
     Path(order_id): Path<Uuid>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
     // Only allow customers to delete their own orders (and only if pending)
     if auth_user.role != "customer" {
-        return Err(StatusCode::FORBIDDEN);
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(ErrorResponse {
+                error: "Only customers can delete orders".into(),
+            }),
+        ));
     }
 
     // Check if order exists and belongs to user
@@ -327,16 +423,36 @@ pub async fn delete_order_by_id(
     .bind(auth_user.user_id)
     .fetch_optional(&*state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-    .ok_or(StatusCode::NOT_FOUND)?;
+    .map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to fetch order".into(),
+        }),
+    ))?
+    .ok_or((
+        StatusCode::NOT_FOUND,
+        Json(ErrorResponse {
+            error: "Order not found or you don't have permission to delete it".into(),
+        }),
+    ))?;
 
     // Only allow deletion of pending orders
     if order.status != "pending" {
-        return Err(StatusCode::CONFLICT); // Cannot delete shipped/delivered orders
+        return Err((
+            StatusCode::CONFLICT,
+            Json(ErrorResponse {
+                error: format!("Cannot delete order with status '{}'. Only pending orders can be deleted", order.status),
+            }),
+        ));
     }
 
     // Start transaction to restore stock and delete order
-    let mut tx = state.db.begin().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let mut tx = state.db.begin().await.map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to start transaction".into(),
+        }),
+    ))?;
 
     // Restore product stock
     sqlx::query(
@@ -350,16 +466,31 @@ pub async fn delete_order_by_id(
     .bind(order_id)
     .execute(&mut *tx)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to restore product stock".into(),
+        }),
+    ))?;
 
     // Delete order (order_items will cascade)
     sqlx::query("DELETE FROM orders WHERE id = $1")
         .bind(order_id)
         .execute(&mut *tx)
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|_| (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorResponse {
+                error: "Failed to delete order".into(),
+            }),
+        ))?;
 
-    tx.commit().await.map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    tx.commit().await.map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to commit transaction".into(),
+        }),
+    ))?;
 
     Ok(StatusCode::NO_CONTENT.into_response())
 }
@@ -370,16 +501,26 @@ pub async fn update_order_by_id(
     auth_user: AuthUser,
     Path(order_id): Path<Uuid>,
     Json(payload): Json<UpdateOrderStatus>,
-) -> Result<impl IntoResponse, StatusCode> {
+) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
     // Only vendors can update order status
     if auth_user.role != "vendor" {
-        return Err(StatusCode::FORBIDDEN);
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(ErrorResponse {
+                error: "Only vendors can update order status".into(),
+            }),
+        ));
     }
 
     // Validate status
     if !["pending", "shipped", "delivered"].contains(&payload.status.as_str()) {
-        return Err(StatusCode::BAD_REQUEST);
+        return Err((
+            StatusCode::BAD_REQUEST,
+            Json(ErrorResponse {
+                error: format!("Invalid status '{}'. Valid statuses are: pending, shipped, delivered", payload.status),
+            }),
+        ));
     }
 
     // Check if vendor has products in this order
@@ -390,10 +531,20 @@ pub async fn update_order_by_id(
     .bind(auth_user.user_id)
     .fetch_one(&*state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    .map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to verify vendor access".into(),
+        }),
+    ))?;
 
     if vendor_item_count == 0 {
-        return Err(StatusCode::FORBIDDEN); // Vendor has no products in this order
+        return Err((
+            StatusCode::FORBIDDEN,
+            Json(ErrorResponse {
+                error: "You don't have permission to update this order. No products from your store in this order".into(),
+            }),
+        ));
     }
 
     // Update order status
@@ -409,8 +560,18 @@ pub async fn update_order_by_id(
     .bind(order_id)
     .fetch_optional(&*state.db)
     .await
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?
-    .ok_or(StatusCode::NOT_FOUND)?;
+    .map_err(|_| (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        Json(ErrorResponse {
+            error: "Failed to update order status".into(),
+        }),
+    ))?
+    .ok_or((
+        StatusCode::NOT_FOUND,
+        Json(ErrorResponse {
+            error: "Order not found".into(),
+        }),
+    ))?;
 
     Ok(Json(updated_order).into_response())
 }

@@ -34,6 +34,7 @@ async fn main() {
         .nest("/cart", cart_routes())
         .nest("/products", product_routes())
         .nest("/orders", order_routes())
+        .route("/*any", get(|| async { "Fallback hit: route not matched" }))
         .with_state(state); // Now passing Arc<AppState>
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
