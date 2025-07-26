@@ -1,10 +1,11 @@
-use axum::{ routing::post, Router };
+use axum::{Router, routing::{get, post}};
+use std::sync::Arc;
+use crate::controllers::auth::{register, login, dashboard};
+use crate::app_state::AppState;
 
-use crate::controllers::auth::*;
-
-pub fn auth_routes() -> Router {
+pub fn auth_routes() -> Router<Arc<AppState>> {
     Router::new()
-        .route("/sign-up", post(sign_up))
-        .route("/sign-in", post(sign_in))
-        .route("/sign-out", post(sign_out))
+        .route("/register", post(register))
+        .route("/login", post(login))
+        .route("/dashboard", get(dashboard))
 }
