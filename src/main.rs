@@ -10,7 +10,7 @@ pub mod controllers;
 pub mod app_state;
 
 use app_state::AppState;
-use routers::{ auth::auth_routes, cart::cart_routes, product::product_routes };
+use routers::{ auth::auth_routes, cart::cart_routes, product::product_routes, order::order_routes};
 
 #[tokio::main]
 async fn main() {
@@ -33,6 +33,8 @@ async fn main() {
         .nest("/auth", auth_routes())
         .nest("/cart", cart_routes())
         .nest("/products", product_routes())
+        .nest("/orders", order_routes())
+        .route("/*any", get(|| async { "Fallback hit: route not matched" }))
         .with_state(state); // Now passing Arc<AppState>
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();

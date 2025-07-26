@@ -3,7 +3,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use std::sync::Arc;
 use crate::{
@@ -23,15 +23,25 @@ pub struct ProductQuery {
     pub offset: Option<i32>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct ErrorResponse {
+    error: String,
+}
+
 //Added a middleWare to protect the routes from authorized access
 pub async fn create_product(
     State(state): State<Arc<AppState>>,
-       AuthUser { user_id, role }: AuthUser,//Check AuthGuard.rs in the controller folder to understand better
+    AuthUser { user_id, role }: AuthUser, //Check AuthGuard.rs in the controller folder to understand better
     Json(payload): Json<CreateProduct>,
-) -> Result<(StatusCode, Json<Product>), StatusCode> {
+) -> Result<(StatusCode, Json<Product>), (StatusCode, Json<ErrorResponse>)> {
     //Get role from authGuard and check if user is a vendor
-     if role.to_lowercase() != "vendor" {
-        return Err(StatusCode::UNAUTHORIZED);
+    if role.to_lowercase() != "vendor" {
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            Json(ErrorResponse {
+                error: "Unauthorized access. Only vendors can create products.".into(),
+            }),
+        ));
     }
 
     // Use actual authenticated user ID
@@ -54,23 +64,25 @@ pub async fn create_product(
         payload.category,
     );
     
-  let result = query.fetch_one(&*state.db).await;
-match result {
-    Ok(product) => Ok((StatusCode::CREATED, Json(product))),
-    Err(err) => {
-        eprintln!("Error while creating product: {:?}", err);
-        Err(StatusCode::INTERNAL_SERVER_ERROR)
+    match query.fetch_one(&*state.db).await {
+        Ok(product) => Ok((StatusCode::CREATED, Json(product))),
+        Err(err) => {
+            eprintln!("Error while creating product: {:?}", err);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to create product.".into(),
+                }),
+            ))
+        }
     }
-
-
-}
-
 }
 
 pub async fn get_all_products(
     State(state): State<Arc<AppState>>,
     Query(params): Query<ProductQuery>,
-) -> Result<Json<Vec<Product>>, StatusCode> {
+) -> Result<Json<Vec<Product>>, (StatusCode, Json<ErrorResponse>)> {
+    println!("getting all product....");
     let mut query_str = String::from("SELECT id, vendor_id, name, description, price, stock, category, created_at, updated_at FROM products WHERE 1=1");
     let mut bind_count = 0;
     
@@ -129,14 +141,25 @@ pub async fn get_all_products(
     
     match query.fetch_all(&*state.db).await {
         Ok(products) => Ok(Json(products)),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(e) => {
+            eprintln!("Error fetching products: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to fetch products.".into(),
+                }),
+            ))
+        }
     }
 }
 
 pub async fn get_product_by_id(
     Path(id): Path<Uuid>,
     State(state): State<Arc<AppState>>, 
-) -> Result<Json<Product>, StatusCode> {
+) -> Result<Json<Product>, (StatusCode, Json<ErrorResponse>)> {
+    println!("Product ID requested: {}", id);
+    println!("HIT get_product_by_id with id: {}", id);
+
     let query = sqlx::query_as!(
         Product,
         r#"
@@ -149,17 +172,30 @@ pub async fn get_product_by_id(
     
     match query.fetch_optional(&*state.db).await {
         Ok(Some(product)) => Ok(Json(product)),
-        Ok(None) => Err(StatusCode::NOT_FOUND),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Ok(None) => Err((
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "Product not found.".into(),
+            }),
+        )),
+        Err(e) => {
+            eprintln!("Error retrieving product: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to fetch product.".into(),
+                }),
+            ))
+        }
     }
 }
 
 pub async fn update_product_by_id(
     Path(id): Path<Uuid>,
-        AuthUser { user_id, role }: AuthUser,
+    AuthUser { user_id, role }: AuthUser,
     State(state): State<Arc<AppState>>, 
     Json(payload): Json<UpdateProduct>,
-) -> Result<Json<Product>, StatusCode> {
+) -> Result<Json<Product>, (StatusCode, Json<ErrorResponse>)> {
     let query = sqlx::query_as!(
         Product,
         r#"
@@ -183,16 +219,29 @@ pub async fn update_product_by_id(
     
     match query.fetch_optional(&*state.db).await {
         Ok(Some(product)) => Ok(Json(product)),
-        Ok(None) => Err(StatusCode::NOT_FOUND),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Ok(None) => Err((
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "Product not found for update.".into(),
+            }),
+        )),
+        Err(e) => {
+            eprintln!("Update error: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to update product.".into(),
+                }),
+            ))
+        }
     }
 }
 
 pub async fn delete_product_by_id(
-        AuthUser { user_id, role }: AuthUser,
+    AuthUser { user_id, role }: AuthUser,
     Path(id): Path<Uuid>,
     State(state): State<Arc<AppState>>,  
-) -> Result<StatusCode, StatusCode> {
+) -> Result<StatusCode, (StatusCode, Json<ErrorResponse>)> {
     let query = sqlx::query!(
         r#"
         DELETE FROM products
@@ -203,7 +252,20 @@ pub async fn delete_product_by_id(
     
     match query.execute(&*state.db).await {
         Ok(result) if result.rows_affected() > 0 => Ok(StatusCode::NO_CONTENT),
-        Ok(_) => Err(StatusCode::NOT_FOUND),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Ok(_) => Err((
+            StatusCode::NOT_FOUND,
+            Json(ErrorResponse {
+                error: "Product not found.".into(),
+            }),
+        )),
+        Err(e) => {
+            eprintln!("Delete error: {:?}", e);
+            Err((
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(ErrorResponse {
+                    error: "Failed to delete product.".into(),
+                }),
+            ))
+        }
     }
 }
