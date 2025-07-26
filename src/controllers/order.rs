@@ -39,34 +39,6 @@ pub async fn get_all_orders(
     Query(params): Query<OrderQueryParams>,
 ) -> Result<impl IntoResponse, (StatusCode, Json<ErrorResponse>)> {
     
-    // Vendor requesting their orders (orders containing their products)
-    if auth_user.role == "vendor" && params.vendor.unwrap_or(false) {
-        let orders = sqlx::query_as::<_, OrderSummary>(
-            r#"
-            SELECT DISTINCT o.id, o.total, o.status, o.created_at,
-                   COUNT(oi.id) as item_count
-            FROM orders o
-            JOIN order_items oi ON o.id = oi.order_id
-            WHERE oi.vendor_id = $1
-            GROUP BY o.id, o.total, o.status, o.created_at
-            ORDER BY o.created_at DESC
-            "#,
-        )
-        .bind(auth_user.user_id)
-        .fetch_all(&*state.db)
-        .await
-        .map_err(|e| {
-            println!("Database error fetching vendor orders: {:?}", e);
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(ErrorResponse {
-                    error: "Failed to fetch vendor orders".into(),
-                }),
-            )
-        })?;
-
-        return Ok(Json(orders).into_response());
-    }
     
     // Customer gets their own orders (or vendor gets personal orders)
     let orders = sqlx::query_as::<_, OrderSummary>(
