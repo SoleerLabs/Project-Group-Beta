@@ -1,0 +1,1411 @@
+{
+	"info": {
+		"_postman_id": "b82fc2d6-167a-463a-b08f-607852429c62",
+		"name": "E-Commerce API",
+		"description": "Postman collection for E-Commerce backend testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27505238"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"ovpnvendor\",\n  \"email\": \"ovpnvendor@example.com\",\n  \"password\": \"vendorpass123\",\n  \"role\": \"vendor\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Register",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"ovpntest\",\n  \"email\": \"ovpntest@example.com\",\n  \"password\": \"testpass123\",\n  \"role\": \"customer\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "232"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:09:30 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"01383c1a-a1db-409c-85da-0d9be630efa1\",\n    \"username\": \"ovpntest\",\n    \"email\": \"ovpntest@example.com\",\n    \"password_hash\": \"$argon2id$v=19$m=19456,t=2,p=1$EROCy9h8h7GHxVmmumRbKQ$lxTH6ZSR5VeqK2adQMHC0VQppBNzfr5h0ol2BRjSWrY\",\n    \"role\": \"customer\"\n}"
+						},
+						{
+							"name": "RegisterVendor",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"ovpnvendor\",\n  \"email\": \"ovpnvendor@example.com\",\n  \"password\": \"vendorpass123\",\n  \"role\": \"vendor\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/register",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "234"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:18:17 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"5c352034-5549-41d4-8555-cf7ddd08b69e\",\n    \"username\": \"ovpnvendor\",\n    \"email\": \"ovpnvendor@example.com\",\n    \"password_hash\": \"$argon2id$v=19$m=19456,t=2,p=1$rNo/5Du7Y1w69N7zNvSlpg$1SL5n214rDmprVAxpWujILB2MHukJ+voDVRRee3JA+A\",\n    \"role\": \"vendor\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"ovpntest@example.com\",\n  \"password\": \"testpass123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"ovpntest@example.com\",\n  \"password\": \"testpass123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "201"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:11:44 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTM4M2MxYS1hMWRiLTQwOWMtODVkYS0wZDliZTYzMGVmYTEiLCJyb2xlIjoiY3VzdG9tZXIiLCJleHAiOjE3NTM2MzYzMDZ9.TJQmFMVl24cOLMy1olS5DSwEbd2h8lfASoQ6P6o7vOk\"\n}"
+						},
+						{
+							"name": "LoginVendor",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"ovpnvendor@example.com\",\n  \"password\": \"vendorpass123\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "199"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:20:27 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI1YzM1MjAzNC01NTQ5LTQxZDQtODU1NS1jZjdkZGQwOGI2OWUiLCJyb2xlIjoidmVuZG9yIiwiZXhwIjoxNzUzNjQwNDI4fQ.jCcSYF_iVfRrFT4gp8PkPv7GLaOc_RBeF1hxuffiXqo\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Dashboard",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTM4M2MxYS1hMWRiLTQwOWMtODVkYS0wZDliZTYzMGVmYTEiLCJyb2xlIjoiY3VzdG9tZXIiLCJleHAiOjE3NTM2MzYzMDZ9.TJQmFMVl24cOLMy1olS5DSwEbd2h8lfASoQ6P6o7vOk",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"dashboard"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Dashboard",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIwMTM4M2MxYS1hMWRiLTQwOWMtODVkYS0wZDliZTYzMGVmYTEiLCJyb2xlIjoiY3VzdG9tZXIiLCJleHAiOjE3NTM2MzYzMDZ9.TJQmFMVl24cOLMy1olS5DSwEbd2h8lfASoQ6P6o7vOk",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{base_url}}/auth/dashboard",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"auth",
+										"dashboard"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "text/plain; charset=utf-8"
+								},
+								{
+									"key": "content-length",
+									"value": "82"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:18:21 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "Welcome back, user ID: 01383c1a-a1db-409c-85da-0d9be630efa1 and you are a customer"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get All Products",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/products",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "2652"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:23:16 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"b8ee54fd-de0d-4545-9641-3fd56f91efc8\",\n        \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n        \"name\": \"Bluetooth Speaker\",\n        \"description\": \"Waterproof and loud\",\n        \"price\": \"39.9900\",\n        \"stock\": 75,\n        \"category\": \"audio\",\n        \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n        \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n    },\n    {\n        \"id\": \"affe055f-630e-4437-b274-798a06d76154\",\n        \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n        \"name\": \"Eco Notebook\",\n        \"description\": \"Recyclable materials\",\n        \"price\": \"12\",\n        \"stock\": 150,\n        \"category\": \"stationery\",\n        \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n        \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n    },\n    {\n        \"id\": \"f9eda3aa-7924-43a6-ab96-bb88cf439986\",\n        \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n        \"name\": \"Gaming Keyboard\",\n        \"description\": \"RGB mechanical keys\",\n        \"price\": \"89.5000\",\n        \"stock\": 60,\n        \"category\": \"electronics\",\n        \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n        \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n    },\n    {\n        \"id\": \"06cf6f42-90b0-46af-b89c-bbd86749301f\",\n        \"vendor_id\": \"f3de84b6-bc29-4d31-a558-d1b2f97e822f\",\n        \"name\": \"Shot gun\",\n        \"description\": \"Compact, silent deadly weapon\",\n        \"price\": \"39.9900\",\n        \"stock\": 48,\n        \"category\": \"Electronics\",\n        \"created_at\": \"2025-07-25T11:23:59.534965Z\",\n        \"updated_at\": \"2025-07-25T11:23:59.534965Z\"\n    },\n    {\n        \"id\": \"0f0cde60-5773-406c-9bb6-6a816838d354\",\n        \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n        \"name\": \"Smart Water Bottle\",\n        \"description\": \"Tracks hydration\",\n        \"price\": \"45\",\n        \"stock\": 40,\n        \"category\": \"health\",\n        \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n        \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n    },\n    {\n        \"id\": \"40a3581c-d604-4d99-8d5e-b275297af305\",\n        \"vendor_id\": \"8ce97c74-3057-4198-b92a-b44ffda29ca6\",\n        \"name\": \"Test Product\",\n        \"description\": \"A test product\",\n        \"price\": \"19.9900\",\n        \"stock\": 50,\n        \"category\": \"test\",\n        \"created_at\": \"2025-07-22T04:40:14.669428Z\",\n        \"updated_at\": \"2025-07-22T04:40:14.669428Z\"\n    },\n    {\n        \"id\": \"e5026caa-b594-467f-8f39-9929fbb99e1a\",\n        \"vendor_id\": \"b229d2d6-954c-405b-a3b4-c7b7217fbe60\",\n        \"name\": \"Twin Uzi\",\n        \"description\": \"10 shot, 10 dead\",\n        \"price\": \"39.9900\",\n        \"stock\": 49,\n        \"category\": \"Electronics\",\n        \"created_at\": \"2025-07-25T11:44:21.623164Z\",\n        \"updated_at\": \"2025-07-25T11:44:21.623164Z\"\n    },\n    {\n        \"id\": \"5ccafd7c-d5bb-4d7f-bf30-e2d9852eddcb\",\n        \"vendor_id\": \"f3de84b6-bc29-4d31-a558-d1b2f97e822f\",\n        \"name\": \"Ultra Keyboard\",\n        \"description\": \"Compact, silent wireless keyboard\",\n        \"price\": \"39.9900\",\n        \"stock\": 49,\n        \"category\": \"Electronics\",\n        \"created_at\": \"2025-07-24T13:03:40.997802Z\",\n        \"updated_at\": \"2025-07-24T13:03:40.997802Z\"\n    },\n    {\n        \"id\": \"f22b0fd0-d43d-42a6-9406-012bdf4b19a1\",\n        \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n        \"name\": \"Wireless Mouse\",\n        \"description\": \"Ergonomic and fast\",\n        \"price\": \"25.9900\",\n        \"stock\": 120,\n        \"category\": \"electronics\",\n        \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n        \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Framework Laptop\",\n  \"description\": \"Build your type of computer\",\n  \"price\": \"899.99\",\n  \"stock\": 15,\n  \"category\": \"Electronics\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/products",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Product",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Framework Laptop\",\n  \"description\": \"Build your type of computer\",\n  \"price\": \"799.99\",\n  \"stock\": 15,\n  \"category\": \"Electronics\"\n\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/products",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "307"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:24:27 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"889b36e9-9bc6-4d3b-ae44-a9146945fa23\",\n    \"vendor_id\": \"5c352034-5549-41d4-8555-cf7ddd08b69e\",\n    \"name\": \"Framework Laptop\",\n    \"description\": \"Build your type of computer\",\n    \"price\": \"799.9900\",\n    \"stock\": 15,\n    \"category\": \"Electronics\",\n    \"created_at\": \"2025-07-26T18:24:27.951736Z\",\n    \"updated_at\": \"2025-07-26T18:24:27.951736Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/products/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Product by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/products/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "293"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:32:08 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"b8ee54fd-de0d-4545-9641-3fd56f91efc8\",\n    \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n    \"name\": \"Bluetooth Speaker\",\n    \"description\": \"Waterproof and loud\",\n    \"price\": \"39.9900\",\n    \"stock\": 75,\n    \"category\": \"audio\",\n    \"created_at\": \"2025-07-22T13:48:16.061987Z\",\n    \"updated_at\": \"2025-07-22T13:48:16.061987Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Framework Laptop 2.0\",\n  \"description\": \"Build your type of supercomputer\",\n  \"price\": \"1299.99\",\n  \"stock\": 25,\n  \"category\": \"Electronics\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/products/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "889b36e9-9bc6-4d3b-ae44-a9146945fa23"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Update Product",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"name\": \"Framework Laptop 2.0\",\n  \"description\": \"Build your type of supercomputer\",\n  \"price\": \"1299.99\",\n  \"stock\": 25,\n  \"category\": \"Electronics\"\n\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/products/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "889b36e9-9bc6-4d3b-ae44-a9146945fa23"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "317"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:27:42 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"889b36e9-9bc6-4d3b-ae44-a9146945fa23\",\n    \"vendor_id\": \"5c352034-5549-41d4-8555-cf7ddd08b69e\",\n    \"name\": \"Framework Laptop 2.0\",\n    \"description\": \"Build your type of supercomputer\",\n    \"price\": \"1299.9900\",\n    \"stock\": 25,\n    \"category\": \"Electronics\",\n    \"created_at\": \"2025-07-26T18:24:27.951736Z\",\n    \"updated_at\": \"2025-07-26T18:27:42.865834Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/products/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "889b36e9-9bc6-4d3b-ae44-a9146945fa23"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Delete Product",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/products/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"products",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "889b36e9-9bc6-4d3b-ae44-a9146945fa23"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:29:54 GMT"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"item": [
+				{
+					"name": "Get Cart Items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Cart Items",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cart",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cart"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "117"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:39:05 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"product_id\": \"b8ee54fd-de0d-4545-9641-3fd56f91efc8\",\n        \"quantity\": 1,\n        \"user_id\": \"01383c1a-a1db-409c-85da-0d9be630efa1\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Add to Cart",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart/add/:product_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"add",
+								":product_id"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Add to Cart",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cart/add/:product_id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cart",
+										"add",
+										":product_id"
+									],
+									"variable": [
+										{
+											"key": "product_id",
+											"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "117"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:45:05 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"product_id\": \"b8ee54fd-de0d-4545-9641-3fd56f91efc8\",\n        \"quantity\": 1,\n        \"user_id\": \"01383c1a-a1db-409c-85da-0d9be630efa1\"\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Remove from Cart",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/cart/remove/:product_id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"cart",
+								"remove",
+								":product_id"
+							],
+							"variable": [
+								{
+									"key": "product_id",
+									"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Remove from Cart",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/cart/remove/:product_id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"cart",
+										"remove",
+										":product_id"
+									],
+									"variable": [
+										{
+											"key": "product_id",
+											"value": "b8ee54fd-de0d-4545-9641-3fd56f91efc8"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 17:43:54 GMT"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Create Order",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"orders"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "147"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:02:26 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"order_id\": \"aff2001c-d4d3-4a3b-9a6f-6e82fcf7753b\",\n    \"total\": \"39.9900\",\n    \"status\": \"pending\",\n    \"message\": \"Order created successfully! Payment processed.\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Orders",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/orders",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"orders"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "139"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:06:44 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "[\n    {\n        \"id\": \"aff2001c-d4d3-4a3b-9a6f-6e82fcf7753b\",\n        \"total\": \"39.9900\",\n        \"status\": \"pending\",\n        \"created_at\": \"2025-07-26T18:02:23.709Z\",\n        \"item_count\": 1\n    }\n]"
+						}
+					]
+				},
+				{
+					"name": "Get Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "aff2001c-d4d3-4a3b-9a6f-6e82fcf7753b"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Get Order by ID",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/orders/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"orders",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "aff2001c-d4d3-4a3b-9a6f-6e82fcf7753b"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "417"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:10:56 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"aff2001c-d4d3-4a3b-9a6f-6e82fcf7753b\",\n    \"user_id\": \"01383c1a-a1db-409c-85da-0d9be630efa1\",\n    \"total\": \"39.9900\",\n    \"status\": \"pending\",\n    \"created_at\": \"2025-07-26T18:02:23.709Z\",\n    \"items\": [\n        {\n            \"id\": \"44d2e86b-daf5-4042-869d-15d2caba2d40\",\n            \"product_id\": \"b8ee54fd-de0d-4545-9641-3fd56f91efc8\",\n            \"product_name\": \"Bluetooth Speaker\",\n            \"vendor_id\": \"f3581eb9-da09-454c-8a05-7daf4216f1f9\",\n            \"quantity\": 1,\n            \"price\": \"39.9900\",\n            \"subtotal\": \"39.9900\"\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Update Order by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Update Order by ID",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"status\": \"delivered\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/orders/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"orders",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "e539c65d-ad94-4a3f-aeab-a3b6b530d812"
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "content-type",
+									"value": "application/json"
+								},
+								{
+									"key": "content-length",
+									"value": "177"
+								},
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:41:30 GMT"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"e539c65d-ad94-4a3f-aeab-a3b6b530d812\",\n    \"user_id\": \"01383c1a-a1db-409c-85da-0d9be630efa1\",\n    \"total\": \"899.9900\",\n    \"status\": \"delivered\",\n    \"created_at\": \"2025-07-26T18:39:05.826483Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Delete Order by ID",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/orders/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"orders",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e539c65d-ad94-4a3f-aeab-a3b6b530d812"
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "Delete Order by ID",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/orders/:id",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"orders",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "e539c65d-ad94-4a3f-aeab-a3b6b530d812"
+										}
+									]
+								}
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "plain",
+							"header": [
+								{
+									"key": "date",
+									"value": "Sat, 26 Jul 2025 18:52:54 GMT"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
